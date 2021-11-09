@@ -54,15 +54,16 @@ createServer(async function (req, res) {
     
   app.request = req;
     const filterModel = new Company();
-    console.log('ormModelClassTest', filterModel.test);
-  console.log('parsed-query', DataHelper.parseUrl(req.url));
-  const dataProvider = filterModel.search(DataHelper.parseUrl(req.url));
+    // console.log('ormModelClassTest', filterModel.test);
+    // console.log('parsed-query', DataHelper.parseUrl(req.url));
+    const dataProvider = filterModel.search(DataHelper.parseUrl(req.url));
     const view = app.view;
     const grid = new MyGridView({ dataProvider, filterModel, columns: ['id', 'title'] });
-    console.log('ejs', ejs);
+    //console.log('ejs', ejs);
     const company = (Company).build({ title: 'testCompany' });
     //res.write(company.title);
-    res.write(await app.view.render('/layout.ejs', { view, 'subview': 'grid', grid })); //write a response
+    console.log('view-head', app.view)
+    res.write(await app.view.render('/layout.ejs', { view: app.view, 'subview': 'grid', grid })); //write a response
     res.end(); //end the response
   }
   
