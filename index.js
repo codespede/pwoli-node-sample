@@ -62,7 +62,7 @@ createServer(async function (req, res) {
     //console.log('ejs', ejs);
     const company = (Company).build({ title: 'testCompany' });
     //res.write(company.title);
-    console.log('view-head', app.view)
+    //console.log('view-head', app.view)
     res.write(await app.view.render('/layout.ejs', { view: app.view, 'subview': 'grid', grid })); //write a response
     res.end(); //end the response
   }
