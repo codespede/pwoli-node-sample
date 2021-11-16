@@ -167,6 +167,6 @@ createServer(async function (req, res) {
             Pwoli.respond(res, dataProvider);
         }
     }
-}).listen(4000, function () {
-  console.log('Listening on port 4000. Point to http://localhost:4000/items/list')
+}).listen(3500, function () {
+  console.log('Listening on port 3500. Point to http://localhost:3500/items/list')
 });
