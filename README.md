@@ -11,14 +11,18 @@ git clone https://github.com/internetmango/pwoli-node-sample.git
 npm install
 ```
 
-- Provide your DB credentials in the file models/index.js
+- Provide your DB credentials in the file config/config.json
 
 ```
-node index.js
+node --experimental-json-modules index.js
+```
+
+For adding some seed data(dummy data) to the tables, please run:
+
+```
+sequelize db:seed:all
 ```
 
 Point your browser to http://localhost:3500/items/list and you should see a page with a `GridView` where you can do CRUD operations for the items.
 
 Point your browser to http://localhost:3500/items/api to see the RESTful API features mentioned in https://internetmango.github.io/pwoli/rest-api
-
-- Insert some dummy records into the table `Company` for populating this `GridView` with some records.

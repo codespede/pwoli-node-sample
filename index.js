@@ -27,7 +27,7 @@ class MyGridView extends GridView {
         return await super.run.call(this);
     }
 }
-
+sequelize.sync()
 createServer(async function (req, res) {
     Pwoli.view = new View({});
     //Pwoli.orm = 'mongoose'
