@@ -18,7 +18,7 @@ npm install
 ```
 node --experimental-json-modules dbinit.js
 ```
-For adding some seed data(dummy data) to the tables, please run:
+- For adding some seed data(dummy data) to the tables, please run:
 
 ```
 sequelize db:seed:all
