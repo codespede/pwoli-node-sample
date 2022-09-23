@@ -18,15 +18,14 @@ npm install
 ```
 node --experimental-json-modules dbinit.js
 ```
-- Run the app
-```
-node --experimental-json-modules index.js
-```
-
 For adding some seed data(dummy data) to the tables, please run:
 
 ```
 sequelize db:seed:all
+```
+- Run the app
+```
+node --experimental-json-modules index.js
 ```
 
 Point your browser to http://localhost:3500/items/list and you should see a page with a `GridView` where you can do CRUD operations for the items.
