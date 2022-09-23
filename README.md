@@ -13,6 +13,12 @@ npm install
 
 - Provide your DB credentials in the file config/config.json
 
+- Initialize the DB with tables
+
+```
+node --experimental-json-modules dbinit.js
+```
+- Run the app
 ```
 node --experimental-json-modules index.js
 ```
