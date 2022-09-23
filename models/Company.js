@@ -114,7 +114,7 @@ const attributes = {
       field: 'eventId',
       references: {
           key: 'id',
-          model: 'Event',
+          model: 'event',
       },
   },
   createdAt: {
@@ -139,7 +139,7 @@ const attributes = {
 
 const { Sequelize } = sqlzPkg;
 const options = {
-  tableName: "Company",
+  tableName: "company",
   comment: "ss",
   indexes: [
     {
