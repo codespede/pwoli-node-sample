@@ -31,3 +31,12 @@ node --experimental-json-modules index.js
 Point your browser to http://localhost:3500/items/list and you should see a page with a `GridView` where you can do CRUD operations for the items.
 
 Point your browser to http://localhost:3500/items/api to see the RESTful API features mentioned in https://internetmango.github.io/pwoli/rest-api
+
+## Using Mongoose as ORM
+
+For using Mongoose as the ORM, please follow the below steps:
+- Rename the file `orm-model-config-sample.cjs` to `orm-model-config.cjs` in your working directory.
+- Run the app
+```
+node --experimental-json-modules index-mongo.js
+- Then point your browser to the above URLs.

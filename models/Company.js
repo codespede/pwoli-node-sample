@@ -4,6 +4,13 @@ import sequelize from './index.js';
 import Event from "./Event.js";
 const DataTypes = sqlzPkg.DataTypes;
 export default class Company extends Model{
+
+    getAttributeLabels = () => {
+      return {
+          title: 'Tittle',
+      }
+    };
+
     static associate() {
         Company.hasOne(Event, { as: 'event', foreignKey: 'id', sourceKey: 'eventId', constraints: false });
     }

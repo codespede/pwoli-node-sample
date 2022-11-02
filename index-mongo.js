@@ -1,12 +1,15 @@
 import { createServer } from 'http';
 import path from 'path';
-import url from 'url';
+import { Application as Pwoli, Model, View } from 'pwoli';
+//Pwoli.ormAdapterClasses = { mongoose: MongooseAdapter };
+Pwoli.setViewPath('views');
+
+import url from "url";
 import queryString from 'querystring';
-import sequelize from './models/index.js';
+
 import {
-    Application as Pwoli,
     GridView,
-    View,
+    ListView,
     SerialColumn,
     ActionColumn,
     CheckboxColumn,
@@ -15,11 +18,10 @@ import {
     DataHelper,
 } from 'pwoli';
 import fs from 'fs';
-import Company from './models/Company.js';
-import Event from './models/Event.js';
-Pwoli.setViewPath('views')
+import { Event, Organization } from './mongo-models.js';
+
 class MyGridView extends GridView {
-    options = { id: 'Mahesh'};
+    key = 'Mahesh';
     async init() {
         return await super.init.call(this);
     }
@@ -27,14 +29,18 @@ class MyGridView extends GridView {
         return await super.run.call(this);
     }
 }
-//sequelize.sync()
+
 createServer(async function (req, res) {
     Pwoli.view = new View({});
     //Pwoli.orm = 'mongoose'
-    //console.log('orma', Pwoli.ormAdapterClasses, Pwoli.orm, Pwoli.getORMAdapter())
+    //
     const uri = url.parse(req.url).pathname;
     let filename = path.join(process.cwd(), uri);
-    if (fs.existsSync(filename) && !fs.statSync(filename).isDirectory()) {
+    
+    if(req.url.includes('noview')){
+        res.write('noview');
+        res.end();
+    } else if (fs.existsSync(filename) && !fs.statSync(filename).isDirectory()) {
         fs.readFile(filename, 'binary', function (err, file) {
             if (err) {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
@@ -49,13 +55,13 @@ createServer(async function (req, res) {
         });
     } else {
         if (req.url.includes('items/delete')) {
-            await Company.destroy({ where: { id: req.url.substring(req.url.lastIndexOf('/') + 1).replace(/\D/g, '') } });
+            await Event.destroy({ where: { id: req.url.substring(req.url.lastIndexOf('/') + 1) } });
         }else if (req.url.includes('items/create') || req.url.includes('items/update')) {
-            console.log('req-query', req.url.substring(req.url.lastIndexOf('/') + 1).replace(/\D/g, ''));
-            const company = req.url.includes('items/create')
-                ? new Company()
-                : await Company.findOne({ where: { id: req.url.substring(req.url.lastIndexOf('/') + 1).replace(/\D/g, '') } });
-            //console.log('company-test', company);
+            
+            const event = req.url.includes('items/create')
+                ? new Event()
+                : await Event.findOne({ where: { id: req.url.substring(req.url.lastIndexOf('/') + 1) } });
+            //
             if (req.method === 'POST') {
                 let body = '';
                 req.on('data', function (data) {
@@ -67,21 +73,22 @@ createServer(async function (req, res) {
                     });
                 });
 
-                if (req.headers['x-requested-with'] === 'XMLHttpRequest' && company.load(post)) {
+                if (req.headers['x-requested-with'] === 'XMLHttpRequest' && event.load(post)) {
                     res.setHeader('Content-Type', 'application/json');
-                    res.write(JSON.stringify(await ActiveForm.validate(company)));
+                    res.write(JSON.stringify(await ActiveForm.validate(event)));
                     res.end();
                     return;
                 }
-                console.log('before-save', post, company.load(post) && (await company.verify()), company.eventId);
-                if (company.load(post) && (await company.verify())) {
-                    //company.eventId = 1;
-                    //company.title = 'tc';
-                    await company
+                
+                //
+                if (event.load(post) && (await event.verify())) {
+                    //event.eventId = 1;
+                    //event.title = 'tc';
+                    await event
                         .save()
                         .then((result) => console.log('save-success', result))
                         .catch((error) => console.log('save-error', error));
-                    //console.log('after-save', await company.save())
+                    //
                     // res.writeHead(301,
                     //     { Location: '/form?success=true' }
                     // );
@@ -91,26 +98,31 @@ createServer(async function (req, res) {
                     return res.end();
                 }
             }
-            const form = new ActiveForm();
-            await form.initialization;
-            const eventsList = {};
-            (await Event.findAll()).forEach(event => { eventsList[event.id] = event.title } );
-            res.write(await Pwoli.view.render('/form.ejs', { form, company, eventsList }));
+            const form1 = new ActiveForm();
+            const form2 = new ActiveForm({ action: '/form', options: { 'data-pjax': 'true' } });
+            await form1.initialization;
+            await form2.initialization;
+            const orgsList = {};
+            (await Organization.find()).forEach(org => { orgsList[org.id] = org.title } );
+            
+            res.write(await Pwoli.view.render('/form_mongo.ejs', { form1, form2, event, orgsList }));
             res.end();
             return;
         }
 
         Pwoli.request = req;
-        const filterModel = new Company();
-        console.log('indext-fm', filterModel.getAttributeLabels())
+        const filterModel = new Event();
+        filterModel._id = null;
+        
         const dataProvider = filterModel.search(DataHelper.parseUrl(req.url));
-        dataProvider.query.include = [{ model: Event, as: 'event' }];
+        dataProvider.query.populate = 'organization';
         let sort = dataProvider.getSort();
-        //console.log('dp-sort', sort)
+        //
         sort.attributes['event.title'] = {
             asc: ['event', 'title', 'asc'],
             desc: ['event', 'title', 'desc'],
         };
+        
         dataProvider.setSort(sort);
         if (req.url.includes('items/list')) {
             let grid = new MyGridView({
@@ -122,11 +134,8 @@ createServer(async function (req, res) {
                     { class: SerialColumn },
                     'id',
                     'title',
-                    {
-                        attribute: 'event.title',
-                        //label: 'Event Title(Related column)',
-                        //value: (model) => model?.title + '..',
-                    },
+                    'contactPerson.name',
+                    'organization.title',
                     {
                         attribute: 'getter',
                         filter: false,
@@ -137,6 +146,30 @@ createServer(async function (req, res) {
                     },
                     { class: ActionColumn, route: 'items' /*visibleButtons: { update: false }*/ },
                 ],
+                // options: {
+                //     id: 'my-grid',
+                // },
+            });
+            // res.write(await grid.render());
+
+            let content = '';
+            // grid = await grid.render();
+            // res.write(await Pwoli.view.setLayout('/layout.ejs').render('/grid.ejs', { grid }));
+
+            if (req.headers['x-requested-with'] === 'XMLHttpRequest')
+                content = await Pwoli.view.render('/_grid.ejs', { grid, company: new Event() }, false); //rendering just the grid rendered in _grid.ejs if it's a Pjax request.
+            else content = await Pwoli.view.render('/grid.ejs', { grid, company: new Event() });
+            return Pwoli.respond(res, content);
+            //Pwoli.respond(res, (res) => return res.render('view', { ...params }));
+        } else if (req.url.includes('items/viewlist')) {
+            Pwoli.setViewPath('views');
+            // dataProvider.getSort().attributes = {
+            //     id: {asc: ['id', 'asc'], desc: ['id', 'desc']}
+            //   }
+            let list = new ListView({
+                dataProvider,
+                itemView: '/_item.ejs',
+                layout: '{summary}\n{sorter}\n{items}\n{pager}',
                 options: {
                     id: 'my-grid',
                 },
@@ -148,8 +181,8 @@ createServer(async function (req, res) {
             // res.write(await Pwoli.view.setLayout('/layout.ejs').render('/grid.ejs', { grid }));
 
             if (req.headers['x-requested-with'] === 'XMLHttpRequest')
-                content = await Pwoli.view.render('/_grid.ejs', { grid, company: new Company() }, false); //rendering just the grid rendered in _grid.ejs if it's a Pjax request.
-            else content = await Pwoli.view.render('/grid.ejs', { grid, company: new Company() });
+                content = await Pwoli.view.render('/_list.ejs', { list, company: new Event() }, false); //rendering just the grid rendered in _grid.ejs if it's a Pjax request.
+            else content = await Pwoli.view.render('/list.ejs', { list, company: new Event() });
             return Pwoli.respond(res, content);
             //Pwoli.respond(res, (res) => return res.render('view', { ...params }));
         } else if (req.url.includes('items/api')) {
@@ -157,16 +190,14 @@ createServer(async function (req, res) {
             const models = await dataProvider.getModels();
             for (let model of models) {
                 model.setAttributeValues({
-                    myGetter: await model.getter, //getter is a custom `getter` written in Company model.
+                    myGetter: await model.getter, //getter is a custom `getter` written in Event model.
                     // model.dataValues.anotherField = anotherValue;
                 });
-                console.log('api-model', model);
+                
             }
             await dataProvider.setModels(models);
 
             Pwoli.respond(res, dataProvider);
         }
     }
-}).listen(3500, function () {
-  console.log('Listening on port 3500. Point to http://localhost:3500/items/list')
-});
+}).listen(3500, function () {});

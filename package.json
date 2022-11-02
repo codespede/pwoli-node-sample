@@ -10,8 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^10.0.0",
+    "mongoose": "^6.7.0",
     "my-awesome-greeter": "^1.0.2",
-    "pwoli": "^0.9.7-beta"
+    "pwoli": "^1.1.0-beta"
   },
   "type": "module"
 }

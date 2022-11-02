@@ -3,8 +3,10 @@ import { Model } from "pwoli";
 import sequelize from './index.js';
 const DataTypes = sqlzPkg.DataTypes;
 export default class Event extends Model {
-    attributeLabels = {
-        title: 'Title',
+    getAttributeLabels() {
+        return {
+            title: 'Tittle',
+        }
     };
 }
 
