@@ -38,6 +38,7 @@ Point your browser to http://localhost:3500/items/api to see the RESTful API fea
 For using Mongoose as the ORM, please follow the below steps:
 - Rename the file `orm-model-config-sample.cjs` to `orm-model-config.cjs` in your working directory.
 - Run the app
-```
-node --experimental-json-modules index-mongo.js
+    ```
+    node --experimental-json-modules index-mongo.js
+    ```
 - Then point your browser to the above URLs.

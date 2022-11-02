@@ -55,12 +55,12 @@ createServer(async function (req, res) {
         });
     } else {
         if (req.url.includes('items/delete')) {
-            await Event.destroy({ where: { id: req.url.substring(req.url.lastIndexOf('/') + 1) } });
+            await Event.remove(req.url.substring(req.url.lastIndexOf('/') + 1).split('?')[0]);
         }else if (req.url.includes('items/create') || req.url.includes('items/update')) {
             
             const event = req.url.includes('items/create')
                 ? new Event()
-                : await Event.findOne({ where: { id: req.url.substring(req.url.lastIndexOf('/') + 1) } });
+                : await Event.findById(req.url.substring(req.url.lastIndexOf('/') + 1).split('?')[0]);
             //
             if (req.method === 'POST') {
                 let body = '';
